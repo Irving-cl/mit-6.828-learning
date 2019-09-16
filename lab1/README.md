@@ -6,4 +6,5 @@ Lab1的内容是教我们搭建、熟悉环境。包括使用**QEMU**虚拟机�
 * BIOS加载并运行Bootloader
 * Bootloader接在kernel，kernel开始运行
 
-
+### BIOS的运行
+BIOS位于内存地址中**0x000F0000**到**0x000FFFFF**这64KB的空间。当机器启动时最先运行这部分的代码，执行最基本的初始化（激活显卡等），并且从持久存储设备（软盘、硬盘、CD-ROM或者网络）加载Bootloader。
