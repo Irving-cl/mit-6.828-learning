@@ -10,3 +10,79 @@ BIOS位于内存地址中**0x000F0000**到**0x000FFFFF**这64KB的空间。当�
 boot loader会读取每个引导设备的第一个扇区（512字节）的内容。
 BIOS会检查这些扇区的最后两个字节是否为**0xAA55**，如果是就代表该扇区是可引导的。
 然后BIOS就会将这512个字节加载到内存中**0x7C00**到**0x7DFF**的位置，接着一个`jmp`指令直接跳过去，把控制交给boot loader。
+
+### Boot loader
+Boot loader的代码在`boot/boot.S`和`boot/main.c`中，我们需要了解一下这些代码中干了点啥。
+* 先看一下`boot.S`:
+```
+.set PROT_MODE_CSEG, 0x8         # kernel code segment selector
+.set PROT_MODE_DSEG, 0x10        # kernel data segment selector
+.set CR0_PE_ON,      0x1         # protected mode enable flag
+```
+`.set`相当于是汇编当中的`#define`吧，我是这样理解的。所以先定义一些后面用的常量。
+
+做一些初始化工作:
+```
+.globl start
+start:
+  .code16                     # Assemble for 16-bit mode
+  cli                         # Disable interrupts
+  cld                         # String operations increment
+
+  # Set up the important data segment registers (DS, ES, SS).
+  xorw    %ax,%ax             # Segment number zero
+  movw    %ax,%ds             # -> Data Segment
+  movw    %ax,%es             # -> Extra Segment
+  movw    %ax,%ss             # -> Stack Segment
+```
+`globl`告诉链接器后面跟的是一个全局可见的名字。
+`.code16`代表生成16位机器码。
+`cli`关闭所有中断，因为在启动的过程中，不能让外面给你中断了，那就毁了。
+`cld`，不懂。。好像暂时也没有必要懂，先放着吧。
+然后就是将`DS`,`ES`,`SS`三个寄存器置为`0`，这很容易看懂。
+
+打开A20地址线：
+```
+  # Enable A20:
+  #   For backwards compatibility with the earliest PCs, physical
+  #   address line 20 is tied low, so that addresses higher than
+  #   1MB wrap around to zero by default.  This code undoes this.
+seta20.1:
+  inb     $0x64,%al               # Wait for not busy
+  testb   $0x2,%al
+  jnz     seta20.1
+
+  movb    $0xd1,%al               # 0xd1 -> port 0x64
+  outb    %al,$0x64
+
+seta20.2:
+  inb     $0x64,%al               # Wait for not busy
+  testb   $0x2,%al
+  jnz     seta20.2
+
+  movb    $0xdf,%al               # 0xdf -> port 0x60
+  outb    %al,$0x60
+```
+这一部分是比较难理解的。
+要有这一部分的目的是为了兼容旧的PC，至于为啥这样就兼容了我还是不太明白。。。
+旧的PC地址空间就只有**1MB**（20位），现在的PC刚打开时候依然只支持这么多。
+如果寻址寻着寻着超过了，那超过20位的部分依然是0。
+比如找一个地址`0x100002`，在没有开启**A20**地址线的情况下就会寻到`0x2`去。
+看到网上说这种情况叫**卷绕机制**。
+
+从**Real Mode**切换到**Protected Mode**
+```
+  # Switch from real to protected mode, using a bootstrap GDT
+  # and segment translation that makes virtual addresses
+  # identical to their physical addresses, so that the
+  # effective memory map does not change during the switch.
+  lgdt    gdtdesc
+  movl    %cr0, %eax
+  orl     $CR0_PE_ON, %eax
+  movl    %eax, %cr0
+
+  # Jump to next instruction, but in 32-bit code segment.
+  # Switches processor into 32-bit mode.
+  ljmp    $PROT_MODE_CSEG, $protcseg
+```
+
