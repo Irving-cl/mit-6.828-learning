@@ -103,5 +103,15 @@ gdtdesc:
   .word   0x17                            # sizeof(gdt) - 1
   .long   gdt                             # address gdt
 ```
-
+前面的16bit代表GDT的长度，这里是`0x17`即`23`，但是不知道为什么要减一，实际应该是24才对。
+接着的32bit就是gdt的地址了，
+然后我们可以看到`gdt`的定义：
+```
+# Bootstrap GDT
+.p2align 2                                # force 4 byte alignment
+gdt:
+  SEG_NULL				# null seg
+  SEG(STA_X|STA_R, 0x0, 0xffffffff)	# code seg
+  SEG(STA_W, 0x0, 0xffffffff)	        # data seg
+```
 
