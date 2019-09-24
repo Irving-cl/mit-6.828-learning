@@ -103,7 +103,11 @@ gdtdesc:
   .word   0x17                            # sizeof(gdt) - 1
   .long   gdt                             # address gdt
 ```
-前面的16bit代表GDT的长度，这里是`0x17`即`23`，但是不知道为什么要减一，实际应该是24才对。
+前面的16bit代表GDT的**表长度减1**，这里是`0x17`即`23`，因此实际是24，这里找到一个地方印证这一点：[link](
+https://en.wikibooks.org/wiki/X86_Assembly/Global_Descriptor_Table)。
+至于为什么要减1并没有解释。
+我自己瞎猜的话，由于刚开始未设置的时候`limit`就被设置为`0xFF`，因此`65535`就被占用无法表示了。
+而且既然要使用**GDT**了，怎么可能表还是空的呢？那就什么内存都不能访问了吧。
 接着的32bit就是gdt的地址了，
 然后我们可以看到`gdt`的定义：
 ```
