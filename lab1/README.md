@@ -124,6 +124,7 @@ gdt:
 
 然后我们可以看一下**gdt**表中每一项的结构：
 ![gdt entry](https://raw.githubusercontent.com/Irving-cl/mit-6.828-learning/master/lab1/gdt_entry.gif)
+
 可以看到每一条占8个字节，因此3条总共24个字节，对应**gdtr**寄存器`limit`的值23。
 首先第一段`SEG_NULL`，全零，为什么要有这个东西我并不清楚。。。
 接着我觉得不必把code seg和data seg完全展开看了。
