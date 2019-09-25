@@ -121,5 +121,6 @@ gdt:
 ```
 `.p2align`指令的意思是`2`的指数对齐。
 这里操作数也是`2`，因此是`4`字节对齐。
+
 然后我们可以看一下**gdt**表中每一项的结构：
 ![gdt entry](https://raw.githubusercontent.com/Irving-cl/mit-6.828-learning/master/lab1/gdt_entry.gif)
