@@ -119,4 +119,5 @@ gdt:
   SEG(STA_X|STA_R, 0x0, 0xffffffff)	# code seg
   SEG(STA_W, 0x0, 0xffffffff)	        # data seg
 ```
-
+`.p2align`指令的意思是`2`的指数对齐。
+这里操作数也是`2`，因此是`4`字节对齐。
