@@ -124,3 +124,16 @@ gdt:
 
 然后我们可以看一下**gdt**表中每一项的结构：
 ![gdt entry](https://raw.githubusercontent.com/Irving-cl/mit-6.828-learning/master/lab1/gdt_entry.gif)
+可以看到每一条占8个字节，因此3条总共24个字节，对应**gdtr**寄存器`limit`的值23。
+首先第一段`SEG_NULL`，全零，为什么要有这个东西我并不清楚。。。
+接着我觉得不必把code seg和data seg完全展开看了。
+`SEG`这个宏就接受3个参数，对应entry中的`type`，`base`，`limit`。
+就是说通过`SEG`宏我们在entry里设置了这三样。
+剩下的几位的设置包含在`SEG`宏里面了，我就暂时不管了。
+可以看到，这两个seg的基地址都是`0x0`。
+而段的`limit`这里应该都是`0xffffffff`。
+这里要注意，在entry中`limit`总共就占**20bit**，不可能是**32bit**的。
+而`SEG`宏当中也是取了第三个参数中的**20bit**，至于为何依然不得而知。
+因此最后得到的`limit`为`0xfffff`。
+`SEG`中还将`G bit`置为`1`，代表段界限单位为**4k**。
+所以总的`limit`为`4k * 2^20 = 4GB`。
