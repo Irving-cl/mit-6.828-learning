@@ -149,3 +149,32 @@ x86有4个控制寄存器：**CR0**，**CR1**，**CR2**，**CR3**。
 由于**CR0**无法被直接修改，先将它加载到**ax**中，然后置上`PE`位。
 它是**CR0**中从低到高的第一位。
 至此就正式进入保护模式了。
+
+接下来是一个跳转命令：`ljmp    $PROT_MODE_CSEG, $protcseg`。
+此时的第一个参数为`0x8`。
+正如刚才所说，此时这个参数表示**gdt**表中的下标。
+然后因为**gdt**表最多有**8192**项，只需前**13**位，剩下3位可作他用。
+因此这里段的下标其实就是**1**，也就是刚才设置好的代码段，基地址为`0x0`，limit为`0xfffff`。
+然后偏移量是`$protcseg`，直接跳到下一段代码：
+
+```
+protcseg:
+  # Set up the protected-mode data segment registers
+  movw    $PROT_MODE_DSEG, %ax    # Our data segment selector
+  movw    %ax, %ds                # -> DS: Data Segment
+  movw    %ax, %es                # -> ES: Extra Segment
+  movw    %ax, %fs                # -> FS
+  movw    %ax, %gs                # -> GS
+  movw    %ax, %ss                # -> SS: Stack Segment
+  
+  # Set up the stack pointer and call into C.
+  movl    $start, %esp
+  call bootmain
+
+  # If bootmain returns (it shouldn't), loop.
+spin:
+  jmp spin
+```
+这里设置这些寄存器的用意我暂时不明白。
+下面就直接调用`bootmain`了，接着就是由C代码实现的了，在`boot/main.c`中。
+至此，`boot.S`的工作全部完成了。
