@@ -35,3 +35,4 @@ The target architecture is assumed to be i386
 => 0x7c40:	mov    $0x7c00,%esp
 => 0x7c45:	call   0x7d19
 ```
+会发现这些指令和`boot.S`没啥区别，就是把相当于把`boot.S`里的那些诸如`start`,`seta20.1`这样的符号换成了具体的地址。
