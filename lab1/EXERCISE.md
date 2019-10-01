@@ -36,3 +36,11 @@ The target architecture is assumed to be i386
 => 0x7c45:	call   0x7d19
 ```
 会发现这些指令和`boot.S`没啥区别，就是把相当于把`boot.S`里的那些诸如`start`,`seta20.1`这样的符号换成了具体的地址。
+
+### Questions
+* At what point does the processor start executing 32-bit code? What exactly causes the switch from 16- to 32-bit mode?
+这个非常显而易见了，开启32位模式后gdb打出来的东西都不一样了，中间还插了一行字。。。所以就是跳转到`0x7c32`之后开始的。
+实际转换做的操作就是打开`cr0`寄存器上的开关，就是从`0x7c23`到`0x7c2a`的这三条指令。
+* What is the last instruction of the boot loader executed, and what is the first instruction of the kernel it just loaded?
+* Where is the first instruction of the kernel?
+* How does the boot loader decide how many sectors it must read in order to fetch the entire kernel from disk? Where does it find this information?
