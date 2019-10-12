@@ -37,6 +37,35 @@ The target architecture is assumed to be i386
 ```
 会发现这些指令和`boot.S`没啥区别，就是把相当于把`boot.S`里的那些诸如`start`,`seta20.1`这样的符号换成了具体的地址。
 
+### 追踪readsect的过程
+在`boot.asm`中看到`readsect`的位置在`0x7c7c`，所以在这里下个断点。开始后先是基本的调用过程和传参：
+```
+=> 0x7c7c:	push   %ebp
+=> 0x7c7d:	mov    %esp,%ebp
+=> 0x7c7f:	push   %edi
+=> 0x7c80:	mov    0xc(%ebp),%ecx
+```
+进入`readsect`后，调用第一个函数`waitdisk`：
+```
+	// wait for disk reaady
+	while ((inb(0x1F7) & 0xC0) != 0x40)
+		/* do nothing */;
+```
+对应调用它的汇编:
+```
+=> 0x7c83:	call   0x7c6a
+=> 0x7c6a:	push   %ebp
+=> 0x7c6b:	mov    $0x1f7,%edx
+=> 0x7c70:	mov    %esp,%ebp
+=> 0x7c72:	in     (%dx),%al
+=> 0x7c73:	and    $0xffffffc0,%eax
+=> 0x7c76:	cmp    $0x40,%al
+=> 0x7c78:	jne    0x7c72
+=> 0x7c7a:	pop    %ebp
+=> 0x7c7b:	ret
+```
+这一部分比较容易理解，就是不断从端口读入，然后位操作，再作比较，条件跳转，直到退出循环。
+
 ### Questions
 * At what point does the processor start executing 32-bit code? What exactly causes the switch from 16- to 32-bit mode?
 这个非常显而易见了，开启32位模式后gdb打出来的东西都不一样了，中间还插了一行字。。。所以就是跳转到`0x7c32`之后开始的。
