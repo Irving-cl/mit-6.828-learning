@@ -140,3 +140,4 @@ boot loader的最后一条指令： `call *0x10018`，kernel的第一条指令�
 地址是在`0x10000c`，代码在`entry.S`中。
 
 * How does the boot loader decide how many sectors it must read in order to fetch the entire kernel from disk? Where does it find this information?
+通过Program Header有多少条entry，就需要加载多少段。这个信息在一开始加载的ELF Header中。
