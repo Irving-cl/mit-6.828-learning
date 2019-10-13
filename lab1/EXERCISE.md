@@ -111,6 +111,17 @@ readsect(void *dst, uint32_t offset)
 接下来是大量重复的从端口读入到内存，每次读**4**个byte。
 每次`%edi`寄存器的值也会加**4**，从一开始的`0x10000`增长到`0x10200`。正好是读了512个byte。
 
+读取sect的for循环的开始和结束：
+```
+	for (; ph < eph; ph++)
+```
+显然就是比较开始和比较结束了，对应的汇编是：
+```
+=> 0x7d51:	cmp    %esi,%ebx
+=> 0x7d53:	jae    0x7d6b
+```
+比较满足条件后，就会跳出循环继续执行。
+
 ### Questions
 * At what point does the processor start executing 32-bit code? What exactly causes the switch from 16- to 32-bit mode?
 这个非常显而易见了，开启32位模式后gdb打出来的东西都不一样了，中间还插了一行字。。。所以就是跳转到`0x7c32`之后开始的。
