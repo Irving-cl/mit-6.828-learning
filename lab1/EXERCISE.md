@@ -38,6 +38,28 @@ The target architecture is assumed to be i386
 会发现这些指令和`boot.S`没啥区别，就是把相当于把`boot.S`里的那些诸如`start`,`seta20.1`这样的符号换成了具体的地址。
 
 ### 追踪readsect的过程
+先看一下`readsect`的代码：
+```
+void
+readsect(void *dst, uint32_t offset)
+{
+	// wait for disk to be ready
+    waitdisk();
+
+    outb(0x1F2, 1);		// count = 1
+    outb(0x1F3, offset);
+    outb(0x1F4, offset >> 8);
+    outb(0x1F5, offset >> 16);
+    outb(0x1F6, (offset >> 24) | 0xE0);
+    outb(0x1F7, 0x20);	// cmd 0x20 - read sectors
+
+    // wait for disk to be ready
+    waitdisk();
+
+    // read a sector
+    insl(0x1F0, dst, SECTSIZE/4);
+}
+```
 在`boot.asm`中看到`readsect`的位置在`0x7c7c`，所以在这里下个断点。开始后先是基本的调用过程和传参：
 ```
 => 0x7c7c:	push   %ebp
@@ -65,6 +87,16 @@ The target architecture is assumed to be i386
 => 0x7c7b:	ret
 ```
 这一部分比较容易理解，就是不断从端口读入，然后位操作，再作比较，条件跳转，直到退出循环。
+
+接着是一串`out`的调用，第一条`outb(0x1F2, 1)`对应的汇编：
+```
+=> 0x7c88:	mov    $0x1f2,%edx
+=> 0x7c8d:	mov    $0x1,%al
+=> 0x7c8f:	out    %al,(%dx)
+```
+这一串`out`都是类似的，就不赘述了。这一串`out`应该是叫磁盘去读位于`offset`处的**1**个sect。
+
+然后又是一个`waitdist`调用，等磁盘完成工作。
 
 ### Questions
 * At what point does the processor start executing 32-bit code? What exactly causes the switch from 16- to 32-bit mode?
