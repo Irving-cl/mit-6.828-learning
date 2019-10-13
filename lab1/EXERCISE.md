@@ -122,10 +122,21 @@ readsect(void *dst, uint32_t offset)
 ```
 比较满足条件后，就会跳出循环继续执行。
 
+跳出循环之后就准备运行内核了，只有一条指令：
+```
+=> 0x7d6b:	call   *0x10018
+```
+这里就跳转到内核的代码了。
+
 ### Questions
 * At what point does the processor start executing 32-bit code? What exactly causes the switch from 16- to 32-bit mode?
 这个非常显而易见了，开启32位模式后gdb打出来的东西都不一样了，中间还插了一行字。。。所以就是跳转到`0x7c32`之后开始的。
 实际转换做的操作就是打开`cr0`寄存器上的开关，就是从`0x7c23`到`0x7c2a`的这三条指令。
+
 * What is the last instruction of the boot loader executed, and what is the first instruction of the kernel it just loaded?
+boot loader的最后一条指令： `call *0x10018`，kernel的第一条指令： `movw $0x1234,0x472`。
+
 * Where is the first instruction of the kernel?
+地址是在`0x10000c`，代码在`entry.S`中。
+
 * How does the boot loader decide how many sectors it must read in order to fetch the entire kernel from disk? Where does it find this information?
