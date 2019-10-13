@@ -98,6 +98,19 @@ readsect(void *dst, uint32_t offset)
 
 然后又是一个`waitdist`调用，等磁盘完成工作。
 
+现在，可以把磁盘出来的内容加载到内存了，对应`insl`那行代码：
+```
+=> 0x7cd6:	cld
+=> 0x7cd7:	repnz insl (%dx),%es:(%edi)
+=> 0x7cd7:	repnz insl (%dx),%es:(%edi)
+=> 0x7cd7:	repnz insl (%dx),%es:(%edi)
+=> 0x7cd7:	repnz insl (%dx),%es:(%edi)
+...
+```
+`cld`指令清除方向标志，是为了后续rep连用的操作，具体我不太懂。
+接下来是大量重复的从端口读入到内存，每次读**4**个byte。
+每次`%edi`寄存器的值也会加**4**，从一开始的`0x10000`增长到`0x10200`。正好是读了512个byte。
+
 ### Questions
 * At what point does the processor start executing 32-bit code? What exactly causes the switch from 16- to 32-bit mode?
 这个非常显而易见了，开启32位模式后gdb打出来的东西都不一样了，中间还插了一行字。。。所以就是跳转到`0x7c32`之后开始的。
