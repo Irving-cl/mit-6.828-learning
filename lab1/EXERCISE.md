@@ -236,11 +236,11 @@ qemu: fatal: Trying to execute code outside RAM or ROM at 0xf010002c
 然后设置全局变量`base`为8。
 然后跳转到打印数字那里。
 ```
-		// (unsigned) octal
-		case 'o':
+        // (unsigned) octal
+        case 'o':
             num = getuint(&ap, lflag);
-			base = 8;
-			goto number;
+            base = 8;
+            goto number;
 ```
 修改完之后再启动qemu，里面那句打印会变成正确的值：
 ```
