@@ -247,4 +247,20 @@ qemu: fatal: Trying to execute code outside RAM or ROM at 0xf010002c
 6828 decimal is 15254 octal!
 ```
 
+### Questions
+1.    Explain the interface between printf.c and console.c. Specifically, what function does console.c export? How is this function used by printf.c?
+
+`printf.c`中的`cputchar`是在`console.c`中实现的。这个函数也作为参数去调用`vprintfmt`。
+
+2.    Explain the following from console.c:
+```
+      if (crt_pos >= CRT_SIZE) {
+          int i;
+          memmove(crt_buf, crt_buf + CRT_COLS, (CRT_SIZE - CRT_COLS) * sizeof(uint16_t));
+          for (i = CRT_SIZE - CRT_COLS; i < CRT_SIZE; i++)
+              crt_buf[i] = 0x0700 | ' ';
+              crt_pos -= CRT_COLS;
+      }
+```
+这里应该是输出屏幕满了，将第一行去掉，第二行开始每一行都往前挪，把最后一行空出来。
 
