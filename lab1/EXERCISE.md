@@ -197,6 +197,7 @@ f0100008:       fe 4f 52                decb   0x52(%edi)
 f010000b:       e4                      .byte 0xe4
 ```
 
+
 ## Exercise 7
 比较容易理解。
 在执行`movl %eax, %cr0`之前，`0x100000`那里是内核代码，`0xf0100000`那里全是0。
@@ -227,3 +228,18 @@ qemu也显示了错误信息：
 ```
 qemu: fatal: Trying to execute code outside RAM or ROM at 0xf010002c
 ```
+
+
+## Exercise 8
+直接模仿10进制和16进制的做法。
+先从参数列表中获取要打印的值。
+然后设置全局变量`base`为8。
+然后跳转到打印数字那里。
+```
+		// (unsigned) octal
+		case 'o':
+            num = getuint(&ap, lflag);
+			base = 8;
+			goto number;
+```
+
