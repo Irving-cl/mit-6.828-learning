@@ -242,4 +242,9 @@ qemu: fatal: Trying to execute code outside RAM or ROM at 0xf010002c
 			base = 8;
 			goto number;
 ```
+修改完之后再启动qemu，里面那句打印会变成正确的值：
+```
+6828 decimal is 15254 octal!
+```
+
 
