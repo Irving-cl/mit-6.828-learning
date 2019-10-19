@@ -264,3 +264,24 @@ qemu: fatal: Trying to execute code outside RAM or ROM at 0xf010002c
 ```
 这里应该是输出屏幕满了，将第一行去掉，第二行开始每一行都往前挪，把最后一行空出来。
 
+3.    Trace the execution of the following code step-by-step:
+```
+int x = 1, y = 3, z = 4;
+cprintf("x %d, y %x, z %d\n", x, y, z);
+```
+*    In the call to cprintf(), to what does fmt point? To what does ap point?
+
+`fmt`显然指向格式字符串，地址为`0xf01018d7`:
+>(gdb) si
+>=> 0xf01000a0 <i386_init+12>:	push   $0xf01018d7
+>0xf01000a0	26	        cprintf("x %d, y %x, z %d\n", x, y, z);
+>(gdb) x/1s 0xf01018d7
+>0xf01018d7:	"x %d, y %x, z %d\n"
+
+`ap`指向可变参数列表中的第一项，在这里就是`x`,也是内存地址最低的参数。
+>(gdb) si
+>=> 0xf0100911 <cprintf+6>:	lea    0xc(%ebp),%eax
+>31		va_start(ap, fmt);
+从`%ebp`开始向上，存储的分别是上次的`%ebp`，返回地址，`fmt`参数。接着就是可变参数列表的第一项了，所以是`0xc(%ebp)`。
+
+*    List (in order of execution) each call to cons_putc, va_arg, and vcprintf. For cons_putc, list its argument as well. For va_arg, list what ap points to before and after the call. For vcprintf list the values of its two arguments.
