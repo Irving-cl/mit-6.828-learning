@@ -285,3 +285,5 @@ cprintf("x %d, y %x, z %d\n", x, y, z);
 从`%ebp`开始向上，存储的分别是上次的`%ebp`，返回地址，`fmt`参数。接着就是可变参数列表的第一项了，所以是`0xc(%ebp)`。
 
 *    List (in order of execution) each call to cons_putc, va_arg, and vcprintf. For cons_putc, list its argument as well. For va_arg, list what ap points to before and after the call. For vcprintf list the values of its two arguments.
+
+`cons_putc`就一个参数，传递时放在`%eax`中。
