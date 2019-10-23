@@ -287,3 +287,7 @@ cprintf("x %d, y %x, z %d\n", x, y, z);
 *    List (in order of execution) each call to cons_putc, va_arg, and vcprintf. For cons_putc, list its argument as well. For va_arg, list what ap points to before and after the call. For vcprintf list the values of its two arguments.
 
 `cons_putc`就一个参数，传递时放在`%eax`中。
+
+`va_arg`这个不太明白它的意思。
+运行到那里的时候`ap`指向栈中存放可变参数的地址，存在`%eax`中。运行`va_arg`之后，`%eax`就变成了那个地址里的值，也就是可变参数的值。
+
