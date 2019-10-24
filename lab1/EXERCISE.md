@@ -291,3 +291,18 @@ cprintf("x %d, y %x, z %d\n", x, y, z);
 `va_arg`这个不太明白它的意思。
 运行到那里的时候`ap`指向栈中存放可变参数的地址，存在`%eax`中。运行`va_arg`之后，`%eax`就变成了那个地址里的值，也就是可变参数的值。
 
+`vcprintf`的两个参数的值：
+```
+=> 0xf01009f8 <vcprintf>: push   %ebp
+
+Breakpoint 1, vcprintf (fmt=0xf0101a67 "6828 decimal is %o octal!\n", ap=0xf010ffe4 "\254\032") at kern/printf.c:18
+18 {
+(gdb) x/1x 0xf010ffe4
+0xf010ffe4: 0x00001aac
+(gdb) x/1u 0xf010ffe4
+0xf010ffe4: 6828
+(gdb) x/1s 0xf0101a67
+0xf0101a67: "6828 decimal is %o octal!\n"
+```
+一个是指向`fmt`字符串的地址，一个是指向可变参数列表的地址。
+
