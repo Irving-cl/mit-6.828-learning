@@ -306,3 +306,24 @@ Breakpoint 1, vcprintf (fmt=0xf0101a67 "6828 decimal is %o octal!\n", ap=0xf010f
 ```
 一个是指向`fmt`字符串的地址，一个是指向可变参数列表的地址。
 
+4.    Run the following code.
+```
+    unsigned int i = 0x00646c72;
+    cprintf("H%x Wo%s", 57616, &i);
+```
+What is the output? Explain how this output is arrived at in the step-by-step manner of the previous exercise.
+Here's an ASCII table that maps bytes to characters.
+
+The output depends on that fact that the x86 is little-endian.
+If the x86 were instead big-endian what would you set i to in order to yield the same output?
+Would you need to change 57616 to a different value?
+
+输出是`He110 World`。
+`57616`换成16进制就是`0xe110`。
+打印`%s`的时候是找到那个地址，一个一个字符打的。
+因为是小端，所以先打`0x72`，所以是`r`。
+后面分别是`0x6c`和`0x64`，也就是`l`和`d`。
+
+如果换成大段的话，需要把`0x00646c72`倒一下，改成`0x726c6400`。
+而`57616`我认为不需要改。
+
