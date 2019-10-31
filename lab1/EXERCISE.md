@@ -336,3 +336,21 @@ cprintf("x=%d y=%d", 3);
 `ap`永远指向第一个参数，在栈里也是最靠下的。
 现在少一个参数，第二个参数就从`ap`后开始依次往上。
 
+
+## Exercise 9
+栈的初始化在刚加载完内核，初始化i386之前，在`entry.S`中：
+```
+	# Clear the frame pointer register (EBP)
+	# so that once we get into debugging C code,
+	# stack backtraces will be terminated properly.
+	movl	$0x0,%ebp			# nuke frame pointer
+
+	# Set the stack pointer
+	movl	$(bootstacktop),%esp
+
+	# now to C code
+	call	i386_init
+```
+`%esp`指向`0xf0110000`。
+
+

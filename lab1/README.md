@@ -166,7 +166,7 @@ protcseg:
   movw    %ax, %fs                # -> FS
   movw    %ax, %gs                # -> GS
   movw    %ax, %ss                # -> SS: Stack Segment
-  
+
   # Set up the stack pointer and call into C.
   movl    $start, %esp
   call bootmain
