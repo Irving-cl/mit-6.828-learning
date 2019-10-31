@@ -327,3 +327,12 @@ Would you need to change 57616 to a different value?
 如果换成大段的话，需要把`0x00646c72`倒一下，改成`0x726c6400`。
 而`57616`我认为不需要改。
 
+5.    In the following code, what is going to be printed after 'y='? (note: the answer is not a specific value.) Why does this happen?
+```
+cprintf("x=%d y=%d", 3);
+```
+跑了一下打出来`1600`。
+正好是`ap`指向地址向上4个字节里的内容。
+`ap`永远指向第一个参数，在栈里也是最靠下的。
+现在少一个参数，第二个参数就从`ap`后开始依次往上。
+
