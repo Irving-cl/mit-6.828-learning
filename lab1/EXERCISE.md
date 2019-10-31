@@ -324,7 +324,7 @@ Would you need to change 57616 to a different value?
 因为是小端，所以先打`0x72`，所以是`r`。
 后面分别是`0x6c`和`0x64`，也就是`l`和`d`。
 
-如果换成大段的话，需要把`0x00646c72`倒一下，改成`0x726c6400`。
+如果换成大端的话，需要把`0x00646c72`倒一下，改成`0x726c6400`。
 而`57616`我认为不需要改。
 
 5.    In the following code, what is going to be printed after 'y='? (note: the answer is not a specific value.) Why does this happen?
