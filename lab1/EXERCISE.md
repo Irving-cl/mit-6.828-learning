@@ -358,3 +358,29 @@ cprintf("x=%d y=%d", 3);
 每次在调用在栈上压入2个32-bit，如果不算调用`cprintf`的话。
 一是在开始的时候将`%ebp`压栈。
 二是在递归调用之前将参数`x`压栈。
+
+然后还要实现`mon_backtrace`。
+比较让人疑惑的是它的参数全都没有用？
+通过`read_ebp`获取`%ebp`的值，然后就可以通过栈的布局来获得`%eip`和所有参数了，代码：
+```
+int
+mon_backtrace(int argc, char **argv, struct Trapframe *tf)
+{
+    // Your code here.
+    uint32_t *ebp = (uint32_t *)read_ebp();
+    uint32_t eip = ebp[1];
+    while (ebp != NULL)
+    {
+        cprintf("ebp:0x%08x eip:0x%08x args:", ebp, eip);
+        for (int i = 0; i < 5; i++)
+        {
+            cprintf("0x%08x ", ebp[2 + i]);
+        }
+        cprintf("\n");
+        ebp = (uint32_t *)ebp[0];
+        eip = ebp[1];
+    }
+    return 0;
+}
+```
+
