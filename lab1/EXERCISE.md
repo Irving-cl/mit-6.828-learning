@@ -306,3 +306,82 @@ Breakpoint 1, vcprintf (fmt=0xf0101a67 "6828 decimal is %o octal!\n", ap=0xf010f
 ```
 一个是指向`fmt`字符串的地址，一个是指向可变参数列表的地址。
 
+4.    Run the following code.
+```
+    unsigned int i = 0x00646c72;
+    cprintf("H%x Wo%s", 57616, &i);
+```
+What is the output? Explain how this output is arrived at in the step-by-step manner of the previous exercise.
+Here's an ASCII table that maps bytes to characters.
+
+The output depends on that fact that the x86 is little-endian.
+If the x86 were instead big-endian what would you set i to in order to yield the same output?
+Would you need to change 57616 to a different value?
+
+输出是`He110 World`。
+`57616`换成16进制就是`0xe110`。
+打印`%s`的时候是找到那个地址，一个一个字符打的。
+因为是小端，所以先打`0x72`，所以是`r`。
+后面分别是`0x6c`和`0x64`，也就是`l`和`d`。
+
+如果换成大端的话，需要把`0x00646c72`倒一下，改成`0x726c6400`。
+而`57616`我认为不需要改。
+
+5.    In the following code, what is going to be printed after 'y='? (note: the answer is not a specific value.) Why does this happen?
+```
+cprintf("x=%d y=%d", 3);
+```
+跑了一下打出来`1600`。
+正好是`ap`指向地址向上4个字节里的内容。
+`ap`永远指向第一个参数，在栈里也是最靠下的。
+现在少一个参数，第二个参数就从`ap`后开始依次往上。
+
+
+## Exercise 9
+栈的初始化在刚加载完内核，初始化i386之前，在`entry.S`中：
+```
+	# Clear the frame pointer register (EBP)
+	# so that once we get into debugging C code,
+	# stack backtraces will be terminated properly.
+	movl	$0x0,%ebp			# nuke frame pointer
+
+	# Set the stack pointer
+	movl	$(bootstacktop),%esp
+
+	# now to C code
+	call	i386_init
+```
+`%esp`指向`0xf0110000`。
+
+
+## Exercise 10
+每次在调用在栈上压入2个32-bit，如果不算调用`cprintf`的话。
+一是在开始的时候将`%ebp`压栈。
+二是在递归调用之前将参数`x`压栈。
+
+## Exercise 11
+实现`mon_backtrace`。
+比较让人疑惑的是它的参数全都没有用？
+通过`read_ebp`获取`%ebp`的值，然后就可以通过栈的布局来获得`%eip`和所有参数了，代码：
+```
+int
+mon_backtrace(int argc, char **argv, struct Trapframe *tf)
+{
+    // Your code here.
+    uint32_t *ebp = (uint32_t *)read_ebp();
+    uint32_t eip = ebp[1];
+    while (ebp != NULL)
+    {
+        cprintf("ebp:0x%08x eip:0x%08x args:", ebp, eip);
+        for (int i = 0; i < 5; i++)
+        {
+            cprintf("0x%08x ", ebp[2 + i]);
+        }
+        cprintf("\n");
+        ebp = (uint32_t *)ebp[0];
+        eip = ebp[1];
+    }
+    return 0;
+}
+```
+
