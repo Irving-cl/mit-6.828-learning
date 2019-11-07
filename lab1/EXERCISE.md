@@ -359,6 +359,7 @@ cprintf("x=%d y=%d", 3);
 一是在开始的时候将`%ebp`压栈。
 二是在递归调用之前将参数`x`压栈。
 
+
 ## Exercise 11
 实现`mon_backtrace`。
 比较让人疑惑的是它的参数全都没有用？
@@ -385,3 +386,53 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 }
 ```
 
+
+## Exercise 12
+`__STAB_BEGIN__`和`__STAB_END__`这些是在`kernel.ld`中定义。
+就是让这个符号可以在代码中被使用，直接在代码中引用stab这部分的地址。
+
+改进`mon_backtrace`，打印出文件名、函数名、行号这些信息。
+通过调用`debuginfo_eip`来实现，同时也要实现`debuginfo_eip`中填充行号的部分：
+```
+    stab_binsearch(stabs, &lline, &rline, N_SLINE, addr);
+    if (lline <= rline) {
+        info->eip_line = stabs[lline].n_desc;
+    }
+```
+通过`stab_binsearch`找到那个`eip`对应的行号的stab。
+对于行号来说，行号的数字在`n_desc`这个字段里，具体就不深究了，反正就是这样。
+
+最后修改`mon_backtrace`，让输出和要求的格式一样：
+```
+int
+mon_backtrace(int argc, char **argv, struct Trapframe *tf)
+{
+    uint32_t *ebp = (uint32_t *)read_ebp();
+    uint32_t eip = ebp[1];
+    struct Eipdebuginfo info;
+
+    cprintf("Stack backtrace:\n");
+    while (ebp != NULL)
+    {
+        cprintf("  ebp %08x  eip %08x  args ", ebp, eip);
+        for (int i = 0; i < 5; i++)
+        {
+            cprintf("%08x ", ebp[2 + i]);
+        }
+        cprintf("\n");
+
+        debuginfo_eip(eip, &info);
+        cprintf("         %s:%d: ", info.eip_file, info.eip_line);
+		for (int i = 0; i < info.eip_fn_namelen; i++) {
+            cprintf("%c", info.eip_fn_name[i]);
+		}
+		cprintf("+%d\n", eip - info.eip_fn_addr);
+
+        ebp = (uint32_t *)ebp[0];
+        eip = ebp[1];
+    }
+    return 0;
+}
+```
+
+至此，lab1终于结束了。
