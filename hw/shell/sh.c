@@ -98,6 +98,10 @@ main(void)
 {
   static char buf[100];
   int fd, r;
+  char *tmp = "./a > b.txt | ./c";
+  printf("cmd:%s\n", tmp);
+  parsecmd(tmp);
+  return 0;
 
   // Read and run input commands.
   while(getcmd(buf, sizeof(buf)) >= 0){
@@ -140,7 +144,7 @@ execcmd(void)
 
 struct cmd*
 redircmd(struct cmd *subcmd, char *file, int type)
-{
+{ printf("redircmd\n");
   struct redircmd *cmd;
 
   cmd = malloc(sizeof(*cmd));
@@ -171,6 +175,12 @@ pipecmd(struct cmd *left, struct cmd *right)
 char whitespace[] = " \t\r\n\v";
 char symbols[] = "<|>";
 
+// Get a token
+// a token is either '<', '|', '>' or a string
+// This function get the first token staring from @param ps
+// if q and eq is passed a non-value, they would be set to the token's first position and one after the last postion
+// ps would be set to the start of next token
+// if the token is a string, return 'a', otherwise return the token itself(only a char)
 int
 gettoken(char **ps, char *es, char **q, char **eq)
 {
@@ -178,6 +188,7 @@ gettoken(char **ps, char *es, char **q, char **eq)
   int ret;
   
   s = *ps;
+  // Skip whitespaces
   while(s < es && strchr(whitespace, *s))
     s++;
   if(q)
@@ -208,12 +219,16 @@ gettoken(char **ps, char *es, char **q, char **eq)
   return ret;
 }
 
+// skip all the whitespaces starting from @param ps,
+// and set ps pointing to the first non-whitespace char,
+// return if there is non-whitespace char and the char is among @param toks
 int
 peek(char **ps, char *es, char *toks)
 {
   char *s;
   
   s = *ps;
+  // skip whitespaces from begin
   while(s < es && strchr(whitespace, *s))
     s++;
   *ps = s;
@@ -263,14 +278,14 @@ parseline(char **ps, char *es)
 
 struct cmd*
 parsepipe(char **ps, char *es)
-{
+{ printf("parsepipe begin\n");
   struct cmd *cmd;
 
   cmd = parseexec(ps, es);
   if(peek(ps, es, "|")){
     gettoken(ps, es, 0, 0);
     cmd = pipecmd(cmd, parsepipe(ps, es));
-  }
+  }printf("parsepipe end\n");
   return cmd;
 }
 
@@ -279,13 +294,13 @@ parseredirs(struct cmd *cmd, char **ps, char *es)
 {
   int tok;
   char *q, *eq;
-
-  while(peek(ps, es, "<>")){
-    tok = gettoken(ps, es, 0, 0);
+  printf("parseredirs start, ps:(%c,%d) es:(%c,%d)\n", **ps, **ps, *es, *es);
+  while(peek(ps, es, "<>")){printf("while peek\n");printf("before gettoken, ps:(%c,%d) es:(%c,%d)\n", **ps, **ps, *es, *es);
+    tok = gettoken(ps, es, 0, 0);printf("after gettoken, ps:(%c,%d) es:(%c,%d)\n", **ps, **ps, *es, *es);
     if(gettoken(ps, es, &q, &eq) != 'a') {
       fprintf(stderr, "missing file for redirection\n");
       exit(-1);
-    }
+    }printf("gettoken again, ps:(%c,%d) es:(%c,%d) q:(%c,%d) eq:(%c,%d)\n", **ps, **ps, *es, *es, *q, *q, *eq, *eq);
     switch(tok){
     case '<':
       cmd = redircmd(cmd, mkcopy(q, eq), '<');
@@ -295,12 +310,13 @@ parseredirs(struct cmd *cmd, char **ps, char *es)
       break;
     }
   }
+  printf("parseredirs end, ps:%c es:%c\n", **ps, *es);
   return cmd;
 }
 
 struct cmd*
 parseexec(char **ps, char *es)
-{
+{ printf("parseexec begin\n");
   char *q, *eq;
   int tok, argc;
   struct execcmd *cmd;
@@ -326,6 +342,6 @@ parseexec(char **ps, char *es)
     }
     ret = parseredirs(ret, ps, es);
   }
-  cmd->argv[argc] = 0;
+  cmd->argv[argc] = 0;printf("parseexec end\n");
   return ret;
 }
