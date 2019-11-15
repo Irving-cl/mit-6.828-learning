@@ -61,8 +61,8 @@ runcmd(struct cmd *cmd)
     ecmd = (struct execcmd*)cmd;
     if(ecmd->argv[0] == 0)
       _exit(0);
-    fprintf(stderr, "exec not implemented\n");
-    // Your code here ...
+    
+    execv(ecmd->argv[0], &ecmd->argv[1]);
     break;
 
   case '>':
@@ -98,10 +98,6 @@ main(void)
 {
   static char buf[100];
   int fd, r;
-  char *tmp = "./a > b.txt | ./c";
-  printf("cmd:%s\n", tmp);
-  parsecmd(tmp);
-  return 0;
 
   // Read and run input commands.
   while(getcmd(buf, sizeof(buf)) >= 0){
@@ -144,7 +140,7 @@ execcmd(void)
 
 struct cmd*
 redircmd(struct cmd *subcmd, char *file, int type)
-{ printf("redircmd\n");
+{ 
   struct redircmd *cmd;
 
   cmd = malloc(sizeof(*cmd));
@@ -278,14 +274,14 @@ parseline(char **ps, char *es)
 
 struct cmd*
 parsepipe(char **ps, char *es)
-{ printf("parsepipe begin\n");
+{ 
   struct cmd *cmd;
 
   cmd = parseexec(ps, es);
   if(peek(ps, es, "|")){
     gettoken(ps, es, 0, 0);
     cmd = pipecmd(cmd, parsepipe(ps, es));
-  }printf("parsepipe end\n");
+  }
   return cmd;
 }
 
@@ -294,13 +290,12 @@ parseredirs(struct cmd *cmd, char **ps, char *es)
 {
   int tok;
   char *q, *eq;
-  printf("parseredirs start, ps:(%c,%d) es:(%c,%d)\n", **ps, **ps, *es, *es);
-  while(peek(ps, es, "<>")){printf("while peek\n");printf("before gettoken, ps:(%c,%d) es:(%c,%d)\n", **ps, **ps, *es, *es);
-    tok = gettoken(ps, es, 0, 0);printf("after gettoken, ps:(%c,%d) es:(%c,%d)\n", **ps, **ps, *es, *es);
+  while(peek(ps, es, "<>")){
+    tok = gettoken(ps, es, 0, 0);
     if(gettoken(ps, es, &q, &eq) != 'a') {
       fprintf(stderr, "missing file for redirection\n");
       exit(-1);
-    }printf("gettoken again, ps:(%c,%d) es:(%c,%d) q:(%c,%d) eq:(%c,%d)\n", **ps, **ps, *es, *es, *q, *q, *eq, *eq);
+    }
     switch(tok){
     case '<':
       cmd = redircmd(cmd, mkcopy(q, eq), '<');
@@ -310,13 +305,12 @@ parseredirs(struct cmd *cmd, char **ps, char *es)
       break;
     }
   }
-  printf("parseredirs end, ps:%c es:%c\n", **ps, *es);
   return cmd;
 }
 
 struct cmd*
 parseexec(char **ps, char *es)
-{ printf("parseexec begin\n");
+{ 
   char *q, *eq;
   int tok, argc;
   struct execcmd *cmd;
@@ -342,6 +336,6 @@ parseexec(char **ps, char *es)
     }
     ret = parseredirs(ret, ps, es);
   }
-  cmd->argv[argc] = 0;printf("parseexec end\n");
+  cmd->argv[argc] = 0;
   return ret;
 }
