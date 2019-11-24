@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -24,7 +25,7 @@ struct execcmd {
 };
 
 struct redircmd {
-  int type;          // < or > 
+  int type;          // < or >
   struct cmd *cmd;   // the command to be run (e.g., an execcmd)
   char *file;        // the input/output file
   int flags;         // flags for open() indicating read or write
@@ -51,7 +52,7 @@ runcmd(struct cmd *cmd)
 
   if(cmd == 0)
     _exit(0);
-  
+
   switch(cmd->type){
   default:
     fprintf(stderr, "unknown runcmd\n");
@@ -61,24 +62,37 @@ runcmd(struct cmd *cmd)
     ecmd = (struct execcmd*)cmd;
     if(ecmd->argv[0] == 0)
       _exit(0);
-    
-    execv(ecmd->argv[0], &ecmd->argv[1]);
+    execvp(ecmd->argv[0], ecmd->argv);
+    fprintf(stderr, "error_code:%d(%s)", errno, strerror(errno));
     break;
 
   case '>':
   case '<':
     rcmd = (struct redircmd*)cmd;
-    fprintf(stderr, "redir not implemented\n");
-    // Your code here ...
+
+    close(rcmd->fd); // Close the fd(0 or 1) and use it for new file
+    int fd = open(rcmd->file, rcmd->flags); // Open the file, the file descriptor should be 0
     runcmd(rcmd->cmd);
     break;
 
   case '|':
     pcmd = (struct pipecmd*)cmd;
-    fprintf(stderr, "pipe not implemented\n");
-    // Your code here ...
+
+    pipe(p); // initialize pipe
+    if (fork() == 0) // fork a child process to run left command
+    {
+        close(1);  // close stdout
+        dup(p[0]); // use pipe in end as output
+        runcmd(pcmd->left);
+    }
+    if (fork() == 0) // fork a child process to run right command
+    {
+        close(0);  // close stdin
+        dup(p[1]); // use pipe out end as input
+        runcmd(pcmd->right);
+    }
     break;
-  }    
+  }
   _exit(0);
 }
 
@@ -120,7 +134,7 @@ int
 fork1(void)
 {
   int pid;
-  
+ 
   pid = fork();
   if(pid == -1)
     perror("fork");
@@ -310,12 +324,12 @@ parseredirs(struct cmd *cmd, char **ps, char *es)
 
 struct cmd*
 parseexec(char **ps, char *es)
-{ 
+{
   char *q, *eq;
   int tok, argc;
   struct execcmd *cmd;
   struct cmd *ret;
-  
+
   ret = execcmd();
   cmd = (struct execcmd*)ret;
 
