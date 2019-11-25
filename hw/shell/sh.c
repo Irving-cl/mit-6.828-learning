@@ -81,15 +81,19 @@ runcmd(struct cmd *cmd)
     pipe(p); // initialize pipe
     if (fork() == 0) // fork a child process to run left command
     {
-        close(1);  // close stdout
-        dup(p[0]); // use pipe in end as output
-        runcmd(pcmd->left);
-    }
-    if (fork() == 0) // fork a child process to run right command
-    {
         close(0);  // close stdin
-        dup(p[1]); // use pipe out end as input
+        dup(p[0]); // use pipe out end as input
+        close(p[0]);
+        close(p[1]);
         runcmd(pcmd->right);
+    }
+    else
+    {
+        close(1);  // close stdout
+        dup(p[1]); // use pipe in end as output
+        close(p[1]);
+        runcmd(pcmd->left);
+        close(p[0]);
     }
     break;
   }
