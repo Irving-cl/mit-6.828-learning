@@ -79,21 +79,20 @@ runcmd(struct cmd *cmd)
     pcmd = (struct pipecmd*)cmd;
 
     pipe(p); // initialize pipe
-    if (fork() == 0) // fork a child process to run left command
+    if (fork() == 0) // fork a child process to run right command
+    {
+        close(1);  // close stdout
+        dup(p[1]); // use pipe in end as output
+        close(p[1]);
+        runcmd(pcmd->left);
+    }
+    else
     {
         close(0);  // close stdin
         dup(p[0]); // use pipe out end as input
         close(p[0]);
         close(p[1]);
         runcmd(pcmd->right);
-    }
-    else
-    {
-        close(1);  // close stdout
-        dup(p[1]); // use pipe in end as output
-        close(p[1]);
-        runcmd(pcmd->left);
-        close(p[0]);
     }
     break;
   }
@@ -138,7 +137,7 @@ int
 fork1(void)
 {
   int pid;
- 
+
   pid = fork();
   if(pid == -1)
     perror("fork");
@@ -158,7 +157,7 @@ execcmd(void)
 
 struct cmd*
 redircmd(struct cmd *subcmd, char *file, int type)
-{ 
+{
   struct redircmd *cmd;
 
   cmd = malloc(sizeof(*cmd));
@@ -200,7 +199,7 @@ gettoken(char **ps, char *es, char **q, char **eq)
 {
   char *s;
   int ret;
-  
+
   s = *ps;
   // Skip whitespaces
   while(s < es && strchr(whitespace, *s))
@@ -226,7 +225,7 @@ gettoken(char **ps, char *es, char **q, char **eq)
   }
   if(eq)
     *eq = s;
-  
+
   while(s < es && strchr(whitespace, *s))
     s++;
   *ps = s;
@@ -240,7 +239,7 @@ int
 peek(char **ps, char *es, char *toks)
 {
   char *s;
-  
+
   s = *ps;
   // skip whitespaces from begin
   while(s < es && strchr(whitespace, *s))
@@ -255,7 +254,7 @@ struct cmd *parseexec(char**, char*);
 
 // make a copy of the characters in the input buffer, starting from s through es.
 // null-terminate the copy to make it a string.
-char 
+char
 *mkcopy(char *s, char *es)
 {
   int n = es - s;
@@ -292,7 +291,7 @@ parseline(char **ps, char *es)
 
 struct cmd*
 parsepipe(char **ps, char *es)
-{ 
+{
   struct cmd *cmd;
 
   cmd = parseexec(ps, es);
