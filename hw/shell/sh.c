@@ -79,7 +79,7 @@ runcmd(struct cmd *cmd)
     pcmd = (struct pipecmd*)cmd;
 
     pipe(p); // initialize pipe
-    if (fork() == 0) // fork a child process to run right command
+    if (fork() == 0) // fork a child process to run left command
     {
         close(1);  // close stdout
         dup(p[1]); // use pipe in end as output
@@ -88,6 +88,8 @@ runcmd(struct cmd *cmd)
     }
     else
     {
+        wait(&r);  // wait child process to finish
+
         close(0);  // close stdin
         dup(p[0]); // use pipe out end as input
         close(p[0]);
