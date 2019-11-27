@@ -71,7 +71,7 @@ runcmd(struct cmd *cmd)
     rcmd = (struct redircmd*)cmd;
 
     close(rcmd->fd); // Close the fd(0 or 1) and use it for new file
-    int fd = open(rcmd->file, rcmd->flags); // Open the file, the file descriptor should be 0
+    int fd = open(rcmd->file, rcmd->flags, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH); // Open the file, the file descriptor should be 0
     runcmd(rcmd->cmd);
     break;
 
