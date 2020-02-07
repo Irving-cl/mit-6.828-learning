@@ -255,11 +255,21 @@ page_init(void)
     // Change the code to reflect this.
     // NB: DO NOT actually touch the physical memory corresponding to
     // free pages!
+    //
+    // Physical memory:
+    // page [0, 1),        [0x00000000, 0x00001000), in use
+    // page [1, 160),      [0x00001000, 0x000A0000), free
+    // page [160, 256),    [0x000A0000, 0x00100000), in use(I/O hole)
+    // page [256, 288),    [0x00100000, 0x00120000), in use(kernel, 0x1156b4 for now)
+    // page [288, npages), [0x00120000, ~),          free
     size_t i;
     for (i = 0; i < npages; i++) {
-        pages[i].pp_ref = 0;
-        pages[i].pp_link = page_free_list;
-        page_free_list = &pages[i];
+        if ((i >= 1 && i < 160) || i >= 288)
+        {
+            pages[i].pp_ref = 0;
+            pages[i].pp_link = page_free_list;
+            page_free_list = &pages[i];
+        }
     }
 }
 
