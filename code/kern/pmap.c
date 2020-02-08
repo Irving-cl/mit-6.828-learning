@@ -165,6 +165,7 @@ mem_init(void)
     check_page_free_list(1);
     check_page_alloc();
     check_page();
+    panic("page init succeeded\n");
 
     //////////////////////////////////////////////////////////////////////
     // Now we set up virtual memory
@@ -260,11 +261,13 @@ page_init(void)
     // page [0, 1),        [0x00000000, 0x00001000), in use
     // page [1, 160),      [0x00001000, 0x000A0000), free
     // page [160, 256),    [0x000A0000, 0x00100000), in use(I/O hole)
-    // page [256, 288),    [0x00100000, 0x00120000), in use(kernel, 0x1156b4 for now)
-    // page [288, npages), [0x00120000, ~),          free
+    // page [256, ...),    [0x00100000, 0x001156b4), in use(kernel)
+    // page [..., end),    [0x00117000, 0x00157000), in use(page data structure,
+    //                                               allocated by boot_alloc)
+    // set end to 0x00160000, namely the 352 page
     size_t i;
     for (i = 0; i < npages; i++) {
-        if ((i >= 1 && i < 160) || i >= 288)
+        if ((i >= 1 && i < 160) || i >= 352)
         {
             pages[i].pp_ref = 0;
             pages[i].pp_link = page_free_list;
