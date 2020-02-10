@@ -366,7 +366,26 @@ pte_t *
 pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
     // Fill this function in
-    return NULL;
+    pte_t *pte = NULL;
+
+    if (pgdir[PDX(va)] == 0)
+    {
+        if (create)
+        {
+            struct PageInfo *page = page_alloc(0);
+            if (page == NULL)
+            {
+                return NULL;
+            }
+            pgdir[PDX(va)] = page2pa(page) | PTE_P | PTE_W | PTE_U;
+            pte = &((pte_t *)pgdir[PDX(va)])[PTX(va)];
+        }
+    }
+    else
+    {
+        pte = &((pte_t *)pgdir[PDX(va)])[PTX(va)];
+    }
+    return pte;
 }
 
 //
