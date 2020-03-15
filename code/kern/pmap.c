@@ -372,7 +372,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
     {
         if (create)
         {
-            struct PageInfo *page = page_alloc(0);
+            struct PageInfo *page = page_alloc(ALLOC_ZERO);
             if (page == NULL)
             {
                 return NULL;
@@ -451,8 +451,20 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 struct PageInfo *
 page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
-    // Fill this function in
-    return NULL;
+    struct PageInfo *pg = NULL;
+    pte_t *entry = pgdir_walk(pgdir, va, false);
+    if (entry == NULL)
+    {
+        return pg;
+    }
+
+    if (pte_store != NULL)
+    {
+        *pte_store = entry;
+    }
+
+    pg = pa2page(PTE_ADDR(*entry));
+    return pg;
 }
 
 //
