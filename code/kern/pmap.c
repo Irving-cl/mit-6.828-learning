@@ -433,7 +433,24 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
-    // Fill this function in
+    pte_t *entry = NULL;
+
+    // Remove the page if it already exists.
+    page_remove(pgdir, va);
+    tlb_invalidate(pgdir, va);
+
+    // Get the page table entry for 'va' and create it if necessary.
+    entry = pgdir_walk(pgdir, va, true);
+    if (entry == NULL)
+    {
+        return E_NO_MEM;
+    }
+
+    // Fill the PTE entry
+    *entry = page2pa(pp) | perm | PTE_P;
+
+    // Add ref count for the page.
+    ++pp->pp_ref;
     return 0;
 }
 
