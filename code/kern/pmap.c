@@ -485,7 +485,22 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 void
 page_remove(pde_t *pgdir, void *va)
 {
-    // Fill this function in
+   pte_t *entry = NULL;
+   struct PageInfo *pg = page_lookup(pgdir, va, &entry);
+
+   if (pg == NULL)
+   {
+       return;
+   }
+
+   // Decrease page reference count.
+   page_decref(pg);
+
+   // Set page table entry corresponding to 'va' to 0.
+   *entry = 0;
+
+   // Invalidate TLB for 'va'.
+   tlb_invalidate(pgdir, va);
 }
 
 //
