@@ -443,7 +443,7 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
     entry = pgdir_walk(pgdir, va, true);
     if (entry == NULL)
     {
-        return E_NO_MEM;
+        return -E_NO_MEM;
     }
 
     // Fill the PTE entry
