@@ -436,6 +436,9 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
     pte_t *entry = NULL;
 
+    // Add ref count for the page at first for re-insert case.
+    ++pp->pp_ref;
+
     // Remove the page if it already exists.
     page_remove(pgdir, va);
     tlb_invalidate(pgdir, va);
@@ -444,14 +447,13 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
     entry = pgdir_walk(pgdir, va, true);
     if (entry == NULL)
     {
+        --pp->pp_ref; // Decrease the ref count for failed case.
         return -E_NO_MEM;
     }
 
     // Fill the PTE entry
     *entry = page2pa(pp) | perm | PTE_P;
 
-    // Add ref count for the page.
-    ++pp->pp_ref;
     return 0;
 }
 
