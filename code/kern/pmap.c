@@ -365,10 +365,10 @@ page_decref(struct PageInfo* pp)
 pte_t *
 pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
-    // Fill this function in
     pte_t *pte = NULL;
+    pgdir = &pgdir[PDX(va)];
 
-    if (pgdir[PDX(va)] == 0)
+    if (*pgdir == 0)
     {
         if (create)
         {
@@ -377,13 +377,13 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
             {
                 return NULL;
             }
-            pgdir[PDX(va)] = page2pa(page) | PTE_P | PTE_W | PTE_U;
-            pte = &((pte_t *)pgdir[PDX(va)])[PTX(va)];
+            *pgdir = page2pa(page) | PTE_P | PTE_W | PTE_U;
+            pte = &((pte_t *)KADDR(PTE_ADDR(*pgdir)))[PTX(va)];
         }
     }
     else
     {
-        pte = &((pte_t *)pgdir[PDX(va)])[PTX(va)];
+        pte = &((pte_t *)KADDR(PTE_ADDR(*pgdir)))[PTX(va)];
     }
     return pte;
 }
