@@ -265,8 +265,7 @@ page_init(void)
     // page [..., end),    [0x00117000, 0x00157000), in use(page data structure,
     //                                               allocated by boot_alloc)
     // set end to 0x00160000, namely the 352 page
-    size_t i;
-    for (i = 0; i < npages; i++) {
+    for (size_t i = 0; i < npages; i++) {
         if ((i >= 1 && i < 160) || i >= 352)
         {
             pages[i].pp_ref = 0;
