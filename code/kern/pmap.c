@@ -165,7 +165,6 @@ mem_init(void)
     check_page_free_list(1);
     check_page_alloc();
     check_page();
-    panic("page init succeeded\n");
 
     //////////////////////////////////////////////////////////////////////
     // Now we set up virtual memory
