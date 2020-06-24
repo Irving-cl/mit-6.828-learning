@@ -401,7 +401,11 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 static void
 boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 {
-    // Fill this function in
+    pte_t *entry = pgdir_walk(pgdir, (const void *)va, true);
+
+    assert(entry != NULL);
+
+    *entry = (pa & ~0xFFF) | perm | PTE_P;
 }
 
 //
