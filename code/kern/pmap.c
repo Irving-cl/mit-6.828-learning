@@ -176,6 +176,7 @@ mem_init(void)
     //      (ie. perm = PTE_U | PTE_P)
     //    - pages itself -- kernel RW, user NONE
     // Your code goes here:
+    
 
     //////////////////////////////////////////////////////////////////////
     // Use the physical memory that 'bootstack' refers to as the kernel
@@ -401,11 +402,18 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 static void
 boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 {
-    pte_t *entry = pgdir_walk(pgdir, (const void *)va, true);
+    assert(size % PGSIZE == 0);
 
-    assert(entry != NULL);
+    pte_t *entry = NULL;
 
-    *entry = (pa & ~0xFFF) | perm | PTE_P;
+    for (size_t i = 0; i < size; i += PGSIZE)
+    {
+        entry = pgdir_walk(pgdir, (const void *)va, true);
+
+        assert(entry != NULL);
+
+        *entry = (pa & ~0xFFF) | perm | PTE_P;
+    }
 }
 
 //
