@@ -25,6 +25,7 @@ static struct Command commands[] = {
     { "help", "Display this list of commands", mon_help },
     { "kerninfo", "Display information about the kernel", mon_kerninfo },
     { "backtrace", "Display the backtrace of function call", mon_backtrace },
+    { "showmappings", "Display the virtual address mappings of current address space", mon_showmappings },
 };
 
 /***** Implementations of basic kernel monitor commands *****/
@@ -85,6 +86,17 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
     return 0;
 }
 
+int
+mon_showmappings(int argc, char **argv, struct Trapframe *tf)
+{
+    if (argc != 3)
+    {
+        cprintf("mon_showmappings: Invalid arguments!\n");
+        return -1;
+    }
+
+    return 0;
+}
 
 /***** Kernel monitor command interpreter *****/
 
