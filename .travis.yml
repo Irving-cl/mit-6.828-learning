@@ -5,7 +5,7 @@ services:
 
 before_install:
 - docker pull oos1111/mit-6.828
-- docker run --rm -v ${PWD}:/home/mit-6.828 /bin/sh -c "cd /home/mit-6.828" oos1111/mit-6.828
+- docker run --rm -v ${PWD}:/home/mit-6.828-learning oos1111/mit-6.828 /bin/sh -c "cd /home/mit-6.828-learning; cd code; make"
 - docker ps
 
 script: .travis/script.sh
