@@ -1,4 +1,5 @@
 #!/bin/sh
 
-echo hello traivs
+echo ${PWD}
+make
 
