@@ -1,3 +1,12 @@
 language: c
-os: linux
+
+services:
+  - docker
+
+before_install:
+- docker pull oos1111/mit-6.828
+- docker run --rm -v ./:/home/mit-6.828 /bin/sh -c "cd /home/mit-6.828" oos1111/mit-6.828
+- docker ps
+
 script: .travis/script.sh
+
