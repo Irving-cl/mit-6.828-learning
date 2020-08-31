@@ -10,6 +10,7 @@
 #include <kern/console.h>
 #include <kern/monitor.h>
 #include <kern/kdebug.h>
+#include <kern/util.h>
 
 #define CMDBUF_SIZE	80	// enough for one VGA text line
 
@@ -89,10 +90,33 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 int
 mon_showmappings(int argc, char **argv, struct Trapframe *tf)
 {
-    if (argc != 3)
+    uint32_t start_addr;
+    uint32_t end_addr;
+
+    if (argc != 3 || !read_hex_from_str(argv[1], &start_addr) || !read_hex_from_str(argv[2], &end_addr))
     {
         cprintf("mon_showmappings: Invalid arguments!\n");
         return -1;
+    }
+
+    cprintf("start:%08x end:%08x\n", start_addr, end_addr);
+    if (((start_addr % 0x1000) != 0) || ((end_addr % 0x1000) != 0))
+    {
+        cprintf("mon_showmappings: Address doesn't align with page!\n");
+        return -1;
+    }
+
+    if (start_addr >= end_addr)
+    {
+        cprintf("mon_showmappings: Start address greater than end address!\n");
+        return -1;
+    }
+
+    cprintf("mon_showmappings: mappings from [0x%08x, 0x%08x]\n", start_addr, end_addr);
+    cprintf("|  Virtual   ||  Physical  |\n");
+    for (uint32_t addr = start_addr; addr <= end_addr; addr += 0x1000)
+    {
+        cprintf("| 0x%08x -> []\n", addr);
     }
 
     return 0;

@@ -1,17 +1,17 @@
 
 #include <kern/util.h>
 
-uint8_t char_hex_val(uint8_t c)
+uint8_t char_hex_val(char c)
 {
     if (CH_BTW(c, 'a', 'f'))
     {
         return c - 'a' + 10;
     }
-    else if (CH_BTW(c, 'A', 'F')
+    else if (CH_BTW(c, 'A', 'F'))
     {
         return c - 'A' + 10;
     }
-    else if (CH_BTW(c, '0', '9')
+    else if (CH_BTW(c, '0', '9'))
     {
         return c - '0';
     }
@@ -51,7 +51,7 @@ bool read_hex_from_str(char *buf, uint32_t *hex)
                 else if (char_hex_val(buf[i]) != UINT8_MAX)
                 {
                     state = 3;
-                    result = (result << 1) | char_hex_val(buf[i]);
+                    result = (result << 4) | char_hex_val(buf[i]);
                 }
                 else
                 {
@@ -62,7 +62,7 @@ bool read_hex_from_str(char *buf, uint32_t *hex)
                 if (char_hex_val(buf[i]) != UINT8_MAX)
                 {
                     state = 3;
-                    result = (result << 1) | char_hex_val(buf[i]);
+                    result = (result << 4) | char_hex_val(buf[i]);
                 }
                 else
                 {
@@ -72,7 +72,7 @@ bool read_hex_from_str(char *buf, uint32_t *hex)
             case 3:
                 if (char_hex_val(buf[i]) != UINT8_MAX)
                 {
-                    result = (result << 1) | char_hex_val(buf[i]);
+                    result = (result << 4) | char_hex_val(buf[i]);
                 }
                 else
                 {
