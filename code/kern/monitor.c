@@ -10,6 +10,7 @@
 #include <kern/console.h>
 #include <kern/monitor.h>
 #include <kern/kdebug.h>
+#include <kern/pmap.h>
 #include <kern/util.h>
 
 #define CMDBUF_SIZE	80	// enough for one VGA text line
@@ -90,8 +91,9 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 int
 mon_showmappings(int argc, char **argv, struct Trapframe *tf)
 {
-    uint32_t start_addr;
-    uint32_t end_addr;
+    uint32_t  start_addr;
+    uint32_t  end_addr;
+    pte_t    *entry;
 
     if (argc != 3 || !read_hex_from_str(argv[1], &start_addr) || !read_hex_from_str(argv[2], &end_addr))
     {
@@ -106,7 +108,7 @@ mon_showmappings(int argc, char **argv, struct Trapframe *tf)
         return -1;
     }
 
-    if (start_addr >= end_addr)
+    if (start_addr > end_addr)
     {
         cprintf("mon_showmappings: Start address greater than end address!\n");
         return -1;
@@ -116,7 +118,15 @@ mon_showmappings(int argc, char **argv, struct Trapframe *tf)
     cprintf("|  Virtual   ||  Physical  |\n");
     for (uint32_t addr = start_addr; addr <= end_addr; addr += 0x1000)
     {
-        cprintf("| 0x%08x -> []\n", addr);
+        struct PageInfo *page = page_lookup(kern_pgdir, (void *)addr, &entry);
+        if (page != NULL && ((*entry) & PTE_P))
+        {
+            cprintf("| 0x%08x -> 0x%08x\n", addr, page2pa(page));
+        }
+        else
+        {
+            cprintf("| 0x%08x -> unmapped\n");
+        }
     }
 
     return 0;
